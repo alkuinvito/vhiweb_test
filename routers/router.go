@@ -2,6 +2,7 @@ package routers
 
 import (
 	"vhiweb_test/app/users"
+	"vhiweb_test/app/vendors"
 	"vhiweb_test/lib/adapters"
 	"vhiweb_test/middlewares"
 
@@ -12,8 +13,16 @@ import (
 
 func Handle(app *fiber.App) {
 	db := adapters.NewDB()
-	userController := users.NewUserController(db)
-	authMiddleware := middlewares.NewAuthMiddleware(&users.UserService{})
+
+	vendorRepository := vendors.NewVendorRepository()
+	vendorService := vendors.NewVendorService(db, vendorRepository)
+	// vendorController := vendors.NewVendorController(vendorService)
+
+	userRepository := users.NewUserRepository()
+	userService := users.NewUserService(db, userRepository, vendorService)
+	userController := users.NewUserController(userService)
+
+	authMiddleware := middlewares.NewAuthMiddleware(userService)
 
 	app.Use(recover.New())
 	app.Use(cors.New())
@@ -26,11 +35,16 @@ func Handle(app *fiber.App) {
 	userRouter.Get("/", userController.GetUsers)
 	userRouter.Get("/:id", userController.GetUserById)
 	// authenticated user only
-	userRouter.Use(authMiddleware.Authenticated)
+	userRouter.Use(authMiddleware.AuthorizedSubject)
 	userRouter.Patch("/:id", userController.UpdateUser)
 	userRouter.Delete("/:id", userController.DeleteUser)
 
 	authRouter := v1.Group("/auth")
 	authRouter.Post("/login", userController.Login)
 	authRouter.Post("/register", userController.Register)
+
+	vendorRouter := v1.Group("/vendors")
+	// authenticated user only
+	vendorRouter.Use(authMiddleware.Authenticated)
+	vendorRouter.Post("/", userController.RegisterAsVendor)
 }

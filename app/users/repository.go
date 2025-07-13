@@ -15,6 +15,10 @@ type IUserRepository interface {
 	update(db *gorm.DB, user UserModel) error
 }
 
+func NewUserRepository() *UserRepository {
+	return &UserRepository{}
+}
+
 func (ur *UserRepository) create(db *gorm.DB, user UserModel) (UserModel, error) {
 	err := db.Create(&user).Error
 
