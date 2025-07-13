@@ -85,17 +85,11 @@ func (us *UserService) GetUserProfile(id string) (GetUserProfileSchema, error) {
 		return user, errors.New("db error")
 	}
 
-	timeLayout := "2006-01-02 15:04:05 -0700 MST"
-	parsedDOB, err := time.Parse(timeLayout, result.DOB)
-	if err != nil {
-		return user, err
-	}
-
 	user.ID = result.ID
 	user.Name = result.Name
 	user.Email = result.Email
 	user.Phone = result.Phone
-	user.DOB = &parsedDOB
+	user.DOB = result.DOB
 	user.Role = result.Role
 
 	return user, nil
@@ -160,7 +154,7 @@ func (us *UserService) Register(input UserRegisterSchema) (GetUserProfileSchema,
 		Name:     input.Name,
 		Email:    input.Email,
 		Phone:    input.Phone,
-		DOB:      input.DOB.String(),
+		DOB:      input.DOB,
 		Password: hashedPassword,
 		Role:     "user",
 	}
@@ -173,17 +167,11 @@ func (us *UserService) Register(input UserRegisterSchema) (GetUserProfileSchema,
 		return updated, err
 	}
 
-	timeLayout := "2006-01-02 15:04:05 -0700 MST"
-	parsedDOB, err := time.Parse(timeLayout, result.DOB)
-	if err != nil {
-		return updated, err
-	}
-
 	updated.ID = result.ID
 	updated.Name = result.Name
 	updated.Email = result.Email
 	updated.Phone = result.Phone
-	updated.DOB = &parsedDOB
+	updated.DOB = result.DOB
 	updated.Role = result.Role
 
 	return updated, nil
@@ -200,15 +188,12 @@ func (us *UserService) UpdateUser(id string, input UpdateUserSchema) error {
 		}
 	}
 
-	if input.DOB != nil {
-		user.DOB = input.DOB.String()
-	}
-
 	user = UserModel{
 		ID:       id,
 		Name:     input.Name,
 		Email:    input.Email,
 		Phone:    input.Phone,
+		DOB:      input.DOB,
 		Password: input.Password,
 	}
 
