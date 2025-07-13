@@ -38,3 +38,8 @@ type UpdateUserSchema struct {
 	DOB      *time.Time `json:"dob"`
 	Password string     `json:"password" validate:"omitempty,min=8,max=64"`
 }
+
+type RequestTokenSchema struct {
+	AccessToken string `json:"access_token"`
+	ExpiredIn   int    `json:"expired_in"`
+}

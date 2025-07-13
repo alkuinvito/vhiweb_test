@@ -90,7 +90,7 @@ func (uc *UserController) Login(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"access_token": token})
+	return c.JSON(token)
 }
 
 func (uc *UserController) Register(c *fiber.Ctx) error {
