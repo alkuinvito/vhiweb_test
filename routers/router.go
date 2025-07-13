@@ -14,13 +14,13 @@ import (
 func Handle(app *fiber.App) {
 	db := adapters.NewDB()
 
+	userRepository := users.NewUserRepository()
+	userService := users.NewUserService(db, userRepository)
+	userController := users.NewUserController(userService)
+
 	vendorRepository := vendors.NewVendorRepository()
 	vendorService := vendors.NewVendorService(db, vendorRepository)
-	// vendorController := vendors.NewVendorController(vendorService)
-
-	userRepository := users.NewUserRepository()
-	userService := users.NewUserService(db, userRepository, vendorService)
-	userController := users.NewUserController(userService)
+	vendorController := vendors.NewVendorController(vendorService)
 
 	authMiddleware := middlewares.NewAuthMiddleware(userService)
 
@@ -44,7 +44,11 @@ func Handle(app *fiber.App) {
 	authRouter.Post("/register", userController.Register)
 
 	vendorRouter := v1.Group("/vendors")
+	vendorRouter.Get("/", vendorController.GetVendors)
+	vendorRouter.Get("/:id", vendorController.GetVendorById)
 	// authenticated user only
 	vendorRouter.Use(authMiddleware.Authenticated)
-	vendorRouter.Post("/", userController.RegisterAsVendor)
+	vendorRouter.Post("/", vendorController.RegisterAsVendor)
+	vendorRouter.Patch("/:id", vendorController.UpdateVendor)
+	vendorRouter.Delete("/:id", vendorController.DeleteVendor)
 }

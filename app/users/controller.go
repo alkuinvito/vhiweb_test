@@ -2,7 +2,6 @@ package users
 
 import (
 	"net/http"
-	"vhiweb_test/app/vendors"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
@@ -19,7 +18,6 @@ type IUserController interface {
 	GetUsers(c *fiber.Ctx) error
 	Login(c *fiber.Ctx) error
 	Register(c *fiber.Ctx) error
-	RegisterAsVendor(c *fiber.Ctx) error
 	UpdateUser(c *fiber.Ctx) error
 }
 
@@ -113,31 +111,6 @@ func (uc *UserController) Register(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"user": user})
-}
-
-func (uc *UserController) RegisterAsVendor(c *fiber.Ctx) error {
-	id := c.Locals("userId").(string)
-
-	var req vendors.RegisterVendorRequest
-	err := c.BodyParser(&req)
-	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	validate := validator.New()
-	err = validate.Struct(req)
-	if err != nil {
-		errs := err.(validator.ValidationErrors)
-
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": errs.Error()})
-	}
-
-	err = uc.userService.RegisterAsVendor(id, req)
-	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return c.JSON(fiber.Map{"message": "vendor created successfully"})
 }
 
 func (uc *UserController) UpdateUser(c *fiber.Ctx) error {

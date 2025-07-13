@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-	"vhiweb_test/app/vendors"
 	"vhiweb_test/lib/adapters"
 	"vhiweb_test/lib/utils"
 
@@ -19,7 +18,6 @@ var EXPIRED_IN = time.Hour * 24 // expired in a day
 type UserService struct {
 	db             *gorm.DB
 	userRepository *UserRepository
-	vendorService  *vendors.VendorService
 }
 
 type IUserService interface {
@@ -30,13 +28,12 @@ type IUserService interface {
 	GetUsers() ([]GetUserSchema, error)
 	Login(credential UserLoginSchema) (string, error)
 	Register(user UserRegisterSchema) (GetUserProfileSchema, error)
-	RegisterAsVendor(id string, input vendors.RegisterVendorRequest) error
 	UpdateUser(id string, input UpdateUserSchema) error
 	VerifyToken(tokenString string) (any, error)
 }
 
-func NewUserService(db *gorm.DB, userRepository *UserRepository, vendorService *vendors.VendorService) *UserService {
-	return &UserService{db, userRepository, vendorService}
+func NewUserService(db *gorm.DB, userRepository *UserRepository) *UserService {
+	return &UserService{db, userRepository}
 }
 
 func (us *UserService) DeleteUser(id string) error {
@@ -74,7 +71,6 @@ func (us *UserService) GetUserById(id string) (GetUserSchema, error) {
 	user.ID = result.ID
 	user.Name = result.Name
 	user.Phone = result.Phone
-	user.Role = result.Role
 
 	return user, nil
 }
@@ -96,7 +92,6 @@ func (us *UserService) GetUserProfile(id string) (GetUserProfileSchema, error) {
 	user.Email = result.Email
 	user.Phone = result.Phone
 	user.DOB = result.DOB
-	user.Role = result.Role
 
 	return user, nil
 }
@@ -114,7 +109,6 @@ func (us *UserService) GetUsers() ([]GetUserSchema, error) {
 			ID:    user.ID,
 			Name:  user.Name,
 			Phone: user.Phone,
-			Role:  user.Role,
 		})
 	}
 
@@ -162,7 +156,6 @@ func (us *UserService) Register(input UserRegisterSchema) (GetUserProfileSchema,
 		Phone:    input.Phone,
 		DOB:      input.DOB,
 		Password: hashedPassword,
-		Role:     "user",
 	}
 
 	tx := us.db.Begin()
@@ -178,47 +171,8 @@ func (us *UserService) Register(input UserRegisterSchema) (GetUserProfileSchema,
 	updated.Email = result.Email
 	updated.Phone = result.Phone
 	updated.DOB = result.DOB
-	updated.Role = result.Role
 
 	return updated, nil
-}
-
-func (us *UserService) RegisterAsVendor(id string, input vendors.RegisterVendorRequest) error {
-	user, err := us.userRepository.findById(us.db, id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found")
-		}
-
-		return errors.New("db error")
-	}
-
-	if user.Role != "user" {
-		return errors.New("user is already registered as vendor")
-	}
-
-	err = us.db.Transaction(func(tx *gorm.DB) error {
-		vendor := vendors.VendorModel{
-			ID:     ulid.Make().String(),
-			Name:   input.Name,
-			UserID: id,
-		}
-
-		_, err := us.vendorService.CreateVendor(tx, vendor)
-		if err != nil {
-			return err
-		}
-
-		updatedUser := UserModel{ID: id, Role: "vendor"}
-		err = us.userRepository.update(tx, updatedUser)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return err
 }
 
 func (us *UserService) UpdateUser(id string, input UpdateUserSchema) error {

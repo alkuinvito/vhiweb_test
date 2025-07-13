@@ -19,7 +19,6 @@ type GetUserSchema struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Phone string `json:"phone"`
-	Role  string `json:"role"`
 }
 
 type GetUserProfileSchema struct {
@@ -28,7 +27,6 @@ type GetUserProfileSchema struct {
 	Email string    `json:"email"`
 	Phone string    `json:"phone"`
 	DOB   time.Time `json:"dob"`
-	Role  string    `json:"role"`
 }
 
 type UpdateUserSchema struct {

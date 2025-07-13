@@ -12,7 +12,6 @@ type UserModel struct {
 	Email     string               `gorm:"not null;uniqueIndex"`
 	Password  string               `gorm:"not null"`
 	Phone     string               `gorm:"not null;unique"`
-	Role      string               `gorm:"not null"`
 	Vendor    *vendors.VendorModel `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
