@@ -45,9 +45,8 @@ func (us *UserService) DeleteUser(id string) error {
 
 func (us *UserService) generateToken(user UserModel) (string, error) {
 	claims := jwt.MapClaims{
-		"sub":  user.ID,
-		"role": user.Role,
-		"exp":  time.Now().Add(EXPIRED_IN).Unix(),
+		"sub": user.ID,
+		"exp": time.Now().Add(EXPIRED_IN).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
