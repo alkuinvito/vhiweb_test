@@ -28,13 +28,11 @@ func (am *AuthMiddleware) Authenticated(c *fiber.Ctx) error {
 
 	token, err := am.userService.VerifyToken(authHeader[7:])
 	if err != nil {
-
 		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
 	sub, err := token.Claims.GetSubject()
 	if err != nil {
-
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Unknown error"})
 	}
 
@@ -58,7 +56,6 @@ func (am *AuthMiddleware) AuthorizedSubject(c *fiber.Ctx) error {
 	id := c.Params("id")
 	sub, err := token.Claims.GetSubject()
 	if err != nil {
-
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Unknown error"})
 	}
 

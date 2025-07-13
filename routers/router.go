@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"vhiweb_test/app/products"
 	"vhiweb_test/app/users"
 	"vhiweb_test/app/vendors"
 	"vhiweb_test/lib/adapters"
@@ -22,7 +23,12 @@ func Handle(app *fiber.App) {
 	vendorService := vendors.NewVendorService(db, vendorRepository)
 	vendorController := vendors.NewVendorController(vendorService)
 
+	productRepository := products.NewProductRepository()
+	productService := products.NewProductService(db, productRepository)
+	productController := products.NewProductController(productService)
+
 	authMiddleware := middlewares.NewAuthMiddleware(userService)
+	vendorMiddleware := middlewares.NewVendorMiddleware(userService, vendorService)
 
 	app.Use(recover.New())
 	app.Use(cors.New())
@@ -51,4 +57,13 @@ func Handle(app *fiber.App) {
 	vendorRouter.Post("/", vendorController.RegisterAsVendor)
 	vendorRouter.Patch("/:id", vendorController.UpdateVendor)
 	vendorRouter.Delete("/:id", vendorController.DeleteVendor)
+
+	productRouter := v1.Group("/products")
+	productRouter.Get("/", productController.GetProducts)
+	productRouter.Get("/:id", productController.GetProductById)
+	// registered vendor only
+	productRouter.Use(vendorMiddleware.RegisteredVendor)
+	productRouter.Post("/", productController.CreateProduct)
+	productRouter.Patch("/:id", productController.UpdateProduct)
+	productRouter.Delete("/:id", productController.DeleteProduct)
 }
