@@ -17,8 +17,8 @@ func Handle(app *fiber.App) {
 
 	userRouter := v1.Group("/users")
 	userRouter.Get("/", userController.GetUsers)
-	userRouter.Get("/:id", userController.FindUserById)
-	userRouter.Put("/:id", userController.UpdateUser)
+	userRouter.Get("/:id", userController.GetUserById)
+	userRouter.Patch("/:id", userController.UpdateUser)
 	userRouter.Delete("/:id", userController.DeleteUser)
 
 	authRouter := v1.Group("/auth")
